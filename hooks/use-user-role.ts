@@ -1,9 +1,17 @@
 import { useSession } from "next-auth/react";
 import { jwtDecode } from "jwt-decode";
-import { UserRole } from "@/lib/types";
+
+enum UserRole {
+  ADMIN = "ADMIN",
+  ESTABLISHMENT_OWNER = "ESTABLISHMENT_OWNER",
+  PROFESSIONAL = "PROFESSIONAL",
+  CLIENT = "CLIENT",
+  GUEST = "GUEST",
+}
 
 interface DecodedToken {
   role: UserRole;
+  establishment_id?: number;
 }
 
 export function useUserRole() {
@@ -11,28 +19,39 @@ export function useUserRole() {
   const isAuthenticated = status === "authenticated";
   const isLoading = status === "loading";
   let userRole = UserRole.GUEST;
-  const accessToken = session?.accessToken as string | undefined; // Captura o accessToken
+  const accessToken = session?.accessToken as string | undefined;
+  let establishmentId: number | undefined;
 
   if (!isAuthenticated || !accessToken) {
-    // Retorna GUEST e accessToken indefinido
-    return { userRole, isAuthenticated, isLoading, accessToken: undefined };
+    return {
+      userRole,
+      isAuthenticated,
+      isLoading,
+      accessToken: undefined,
+      establishmentId: undefined,
+    };
   }
 
   try {
-    // Decodifica o token para obter o papel
     const decoded = jwtDecode(accessToken) as DecodedToken;
     userRole = decoded.role;
+    establishmentId = decoded.establishment_id;
 
-    // Retorna o papel do usuário E o accessToken
-    return { userRole, isAuthenticated, isLoading, accessToken };
+    return {
+      userRole,
+      isAuthenticated,
+      isLoading,
+      accessToken,
+      establishmentId,
+    };
   } catch (e) {
     console.error("Failed to decode token on frontend:", e);
-    // Se falhar na decodificação, retorna GUEST e token indefinido
     return {
       userRole: UserRole.GUEST,
       isAuthenticated,
       isLoading,
       accessToken: undefined,
+      establishmentId: undefined,
     };
   }
 }

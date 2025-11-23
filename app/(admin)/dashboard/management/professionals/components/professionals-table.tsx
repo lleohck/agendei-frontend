@@ -5,23 +5,22 @@ import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUserRole } from "@/hooks/use-user-role";
+import { ProfessionalDAO } from "@/dao/professional-dao";
 import { useState, useEffect } from "react";
 import { Pencil, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
-// Tipagem dos dados do profissional (deve refletir o backend)
 interface Professional {
   id: number;
   email: string;
-  fullName: string;
-  role: string; // ESTABLISHMENT_OWNER, PROFESSIONAL, etc.
-  isActive: boolean;
+  name: string;
+  role: string;
+  is_active: boolean;
 }
 
-// 1. Definição das Colunas
-// Note que esta definição é exportada e será usada pelo DataTable
 export const columns: ColumnDef<Professional>[] = [
   {
-    accessorKey: "fullName",
+    accessorKey: "name",
     header: "Name",
   },
   {
@@ -33,10 +32,10 @@ export const columns: ColumnDef<Professional>[] = [
     header: "Role",
   },
   {
-    accessorKey: "isActive",
+    accessorKey: "is_active",
     header: "Status",
     cell: ({ row }) => {
-      const isActive = row.getValue("isActive");
+      const isActive = row.getValue("is_active");
       return (
         <span
           className={`px-2 py-1 rounded-full text-xs font-medium ${
@@ -50,7 +49,6 @@ export const columns: ColumnDef<Professional>[] = [
       );
     },
   },
-  // Coluna de Ações (Edit/Delete)
   {
     id: "actions",
     header: "Actions",
@@ -67,61 +65,36 @@ export const columns: ColumnDef<Professional>[] = [
   },
 ];
 
-// 2. Componente Principal
 export default function ProfessionalsTable() {
   const [data, setData] = useState<Professional[]>([]);
   const [loading, setLoading] = useState(true);
-  const { accessToken } = useUserRole(); // Agora isso funciona!
+  const { accessToken, establishmentId } = useUserRole();
+  console.log("Access Token:", accessToken);
+  console.log("Establishment ID:", establishmentId);
 
-  // Função para simular a chamada API (Substituir pela chamada real com 'api.get')
-  const fetchProfessionals = async (token: string) => {
-    // --- Substituir esta simulação pela chamada real à API ---
-    // Ex: const response = await api.get('/v1/professionals', { headers: { Authorization: `Bearer ${token}` } })
-    //     return response.data
-    return new Promise<Professional[]>((resolve) => {
-      setTimeout(() => {
-        resolve([
-          {
-            id: 1,
-            email: "ana@agendei.com",
-            fullName: "Ana Silva",
-            role: "PROFESSIONAL",
-            isActive: true,
-          },
-          {
-            id: 2,
-            email: "rui@agendei.com",
-            fullName: "Rui Barbosa",
-            role: "PROFESSIONAL",
-            isActive: false,
-          },
-          {
-            id: 3,
-            email: "carlos@agendei.com",
-            fullName: "Carlos Mota",
-            role: "ESTABLISHMENT_OWNER",
-            isActive: true,
-          },
-        ]);
-      }, 1500);
-    });
+  const fetchProfessionals = async (token: string, id: number) => {
+    try {
+      const professionals = await ProfessionalDAO.getProfessionals(token, id);
+      setData(professionals);
+    } catch (error) {
+      console.error("Failed to fetch professionals:", error);
+      toast.error("Failed to load professionals list. Check API connection.");
+      setData([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
-    if (accessToken) {
+    if (accessToken && establishmentId) {
       setLoading(true);
-      fetchProfessionals(accessToken)
-        .then((fetchedData) => {
-          setData(fetchedData);
-        })
-        .finally(() => {
-          setLoading(false);
-        });
+      fetchProfessionals(accessToken, establishmentId);
+    } else if (!loading) {
+      setData([]);
+      toast.warning("Establishment ID not found in session. Cannot load list.");
     }
-    // Caso o accessToken mude (e.g., login/logout), a tabela recarrega
-  }, [accessToken]);
+  }, [accessToken, establishmentId]);
 
-  // Lógica de Skeleton Loading
   if (loading) {
     return (
       <div className="space-y-4">
