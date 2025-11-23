@@ -1,42 +1,44 @@
 import { api } from "@/lib/api";
 
-interface ProfessionalData {
-  fullName: string;
+export interface ProfessionalData {
+  name: string;
   email: string;
   password: string;
+  establishment_id: string;
+  bio?: string;
+  scheduling_type: "EXACT_TIME" | "FIXED_SLOTS";
+  slot_interval_minutes: number;
 }
 
-interface ProfessionalResponse {
-  id: number;
+export interface ProfessionalResponse {
+  id: string;
   email: string;
-  fullName: string;
+  name: string;
   role: string;
-  isActive: boolean;
+  is_active: boolean;
 }
 
 export const ProfessionalDAO = {
-  async registerProfessional(
+  async create(
     data: ProfessionalData,
     token: string
   ): Promise<ProfessionalResponse> {
-    const url = "/professionals/register";
+    const url = "/professional/";
 
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    const response = await api.post(url, data, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
-    return {
-      id: Math.floor(Math.random() * 1000),
-      email: data.email,
-      fullName: data.fullName,
-      role: "PROFESSIONAL",
-      isActive: true,
-    } as ProfessionalResponse;
+    return response.data;
   },
 
-  async getProfessionals(
+  async getAll(
     token: string,
-    establishmentId: number
+    establishmentId: string
   ): Promise<ProfessionalResponse[]> {
-    const url = `/professionals/?establishment_id=${establishmentId}`;
+    const url = `/professional/list?establishment_id=${establishmentId}`;
 
     const response = await api.get(url, {
       headers: {

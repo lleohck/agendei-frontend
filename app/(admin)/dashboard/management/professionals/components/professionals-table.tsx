@@ -5,20 +5,23 @@ import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUserRole } from "@/hooks/use-user-role";
-import { ProfessionalDAO } from "@/dao/professional-dao";
+import { ProfessionalDAO, ProfessionalResponse } from "@/dao/professional-dao";
+import {
+  EstablishmentDAO,
+  EstablishmentResponse,
+} from "@/dao/establishment-dao";
 import { useState, useEffect } from "react";
 import { Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
-interface Professional {
-  id: number;
-  email: string;
-  name: string;
-  role: string;
-  is_active: boolean;
-}
-
-export const columns: ColumnDef<Professional>[] = [
+export const columns: ColumnDef<ProfessionalResponse>[] = [
   {
     accessorKey: "name",
     header: "Name",
@@ -35,16 +38,16 @@ export const columns: ColumnDef<Professional>[] = [
     accessorKey: "is_active",
     header: "Status",
     cell: ({ row }) => {
-      const isActive = row.getValue("is_active");
+      const is_active = row.getValue("is_active");
       return (
         <span
           className={`px-2 py-1 rounded-full text-xs font-medium ${
-            isActive
+            is_active
               ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
               : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
           }`}
         >
-          {isActive ? "Active" : "Inactive"}
+          {is_active ? "Active" : "Inactive"}
         </span>
       );
     },
@@ -66,39 +69,85 @@ export const columns: ColumnDef<Professional>[] = [
 ];
 
 export default function ProfessionalsTable() {
-  const [data, setData] = useState<Professional[]>([]);
+  const [data, setData] = useState<ProfessionalResponse[]>([]);
+  const [establishments, setEstablishments] = useState<EstablishmentResponse[]>(
+    []
+  );
+  const [selectedEstablishmentId, setSelectedEstablishmentId] =
+    useState<string>("");
   const [loading, setLoading] = useState(true);
-  const { accessToken, establishmentId } = useUserRole();
-  console.log("Access Token:", accessToken);
-  console.log("Establishment ID:", establishmentId);
-
-  const fetchProfessionals = async (token: string, id: number) => {
-    try {
-      const professionals = await ProfessionalDAO.getProfessionals(token, id);
-      setData(professionals);
-    } catch (error) {
-      console.error("Failed to fetch professionals:", error);
-      toast.error("Failed to load professionals list. Check API connection.");
-      setData([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { accessToken } = useUserRole();
 
   useEffect(() => {
-    if (accessToken && establishmentId) {
-      setLoading(true);
-      fetchProfessionals(accessToken, establishmentId);
-    } else if (!loading) {
-      setData([]);
-      toast.warning("Establishment ID not found in session. Cannot load list.");
-    }
-  }, [accessToken, establishmentId]);
+    if (!accessToken) return;
 
-  if (loading) {
+    let isMounted = true;
+
+    const loadEstablishments = async () => {
+      try {
+        const estData = await EstablishmentDAO.getAll(accessToken);
+
+        if (isMounted) {
+          setEstablishments(estData);
+          if (estData.length > 0) {
+            setSelectedEstablishmentId(estData[0].id);
+          } else {
+            setLoading(false);
+          }
+        }
+      } catch (error) {
+        console.error(error);
+        if (isMounted) toast.error("Failed to load establishments filter.");
+      }
+    };
+
+    loadEstablishments();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [accessToken]);
+
+  useEffect(() => {
+    if (!accessToken || !selectedEstablishmentId) return;
+
+    let isMounted = true;
+
+    const fetchProfessionals = async () => {
+      try {
+        setLoading(true);
+        const professionals = await ProfessionalDAO.getAll(
+          accessToken,
+          selectedEstablishmentId
+        );
+
+        if (isMounted) {
+          setData(professionals);
+        }
+      } catch (error) {
+        console.error(error);
+        if (isMounted) {
+          toast.error("Failed to load professionals list.");
+          setData([]);
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchProfessionals();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [accessToken, selectedEstablishmentId]);
+
+  if (loading && data.length === 0 && establishments.length === 0) {
     return (
       <div className="space-y-4">
-        <Skeleton className="h-12 w-full" />
+        <Skeleton className="h-10 w-[200px]" />
         <Skeleton className="h-12 w-full" />
         <Skeleton className="h-12 w-full" />
         <Skeleton className="h-12 w-full" />
@@ -107,8 +156,28 @@ export default function ProfessionalsTable() {
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-      <DataTable columns={columns} data={data} />
+    <div className="space-y-4">
+      <div className="w-[250px]">
+        <Select
+          value={selectedEstablishmentId}
+          onValueChange={setSelectedEstablishmentId}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select Establishment" />
+          </SelectTrigger>
+          <SelectContent>
+            {establishments.map((est) => (
+              <SelectItem key={est.id} value={est.id.toString()}>
+                {est.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+        <DataTable columns={columns} data={data} />
+      </div>
     </div>
   );
 }
