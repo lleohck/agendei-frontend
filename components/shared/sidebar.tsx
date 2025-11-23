@@ -7,6 +7,7 @@ import {
   Settings,
   Users,
   Briefcase,
+  Building2,
 } from "lucide-react";
 import { LogoutButton } from "@/components/features/login/logout-button";
 import { useUserRole } from "@/hooks/use-user-role";
@@ -33,6 +34,12 @@ const navigationItems = [
       UserRole.ESTABLISHMENT_OWNER,
       UserRole.PROFESSIONAL,
     ],
+  },
+  {
+    name: "Establishments",
+    href: "/dashboard/management/establishments",
+    icon: Building2,
+    roles: [UserRole.ADMIN, UserRole.ESTABLISHMENT_OWNER],
   },
   {
     name: "Professionals",
