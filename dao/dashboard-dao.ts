@@ -20,6 +20,7 @@ export interface DashboardSummaryResponse {
   appointments_today_count: number;
   estimated_revenue_next_7_days: number;
   cancellation_rate_this_month: number; // Ex: 0.15 para 15%
+  estimated_revenue_today: number;
 
   today_appointments: UpcomingAppointmentSummary[];
   weekly_trend: WeeklyTrendPoint[];

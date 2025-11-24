@@ -66,9 +66,15 @@ export function DashboardOverview() {
       {/* 1. Cartões de Métricas (KPIs) */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <KpiCard
-          title="Próxima Receita Estimada (7D)"
-          value={summary.estimated_revenue_next_7_days}
-          icon={<DollarSign className="h-5 w-5 text-green-500" />}
+          title="Agendamentos de Hoje"
+          value={summary.appointments_today_count}
+          icon={<Clock className="h-5 w-5 text-yellow-500" />}
+          format="number"
+        />
+        <KpiCard
+          title="Receita Estimada (Hoje)"
+          value={summary.estimated_revenue_today}
+          icon={<DollarSign className="h-5 w-5 text-yellow-600" />}
           format="currency"
         />
         <KpiCard
@@ -78,16 +84,10 @@ export function DashboardOverview() {
           format="number"
         />
         <KpiCard
-          title="Agendamentos de Hoje"
-          value={summary.appointments_today_count}
-          icon={<Clock className="h-5 w-5 text-yellow-500" />}
-          format="number"
-        />
-        <KpiCard
-          title="Taxa de Cancelamento (Mês)"
-          value={summary.cancellation_rate_this_month}
-          icon={<XCircle className="h-5 w-5 text-red-500" />}
-          format="percent"
+          title="Próxima Receita Estimada (7D)"
+          value={summary.estimated_revenue_next_7_days}
+          icon={<DollarSign className="h-5 w-5 text-green-500" />}
+          format="currency"
         />
       </div>
 
@@ -154,6 +154,12 @@ export function DashboardOverview() {
           </CardContent>
         </Card>
         <PopularServicesChart />
+        <KpiCard
+          title="Taxa de Cancelamento (Mês)"
+          value={summary.cancellation_rate_this_month}
+          icon={<XCircle className="h-5 w-5 text-red-500" />}
+          format="percent"
+        />
       </div>
     </div>
   );
