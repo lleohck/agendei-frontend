@@ -10,7 +10,7 @@ import {
   EstablishmentDAO,
   EstablishmentResponse,
 } from "@/dao/establishment-dao";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -20,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import Link from "next/link";
 
 export const columns: ColumnDef<ProfessionalResponse>[] = [
   {
@@ -55,16 +56,7 @@ export const columns: ColumnDef<ProfessionalResponse>[] = [
   {
     id: "actions",
     header: "Actions",
-    cell: ({ row }) => (
-      <div className="flex space-x-2">
-        <Button variant="outline" size="icon" title="Edit">
-          <Pencil className="h-4 w-4" />
-        </Button>
-        <Button variant="destructive" size="icon" title="Delete">
-          <Trash2 className="h-4 w-4" />
-        </Button>
-      </div>
-    ),
+    cell: () => <div />,
   },
 ];
 
@@ -78,41 +70,8 @@ export default function ProfessionalsTable() {
   const [loading, setLoading] = useState(true);
   const { accessToken } = useUserRole();
 
-  useEffect(() => {
-    if (!accessToken) return;
-
-    let isMounted = true;
-
-    const loadEstablishments = async () => {
-      try {
-        const estData = await EstablishmentDAO.getAll(accessToken);
-
-        if (isMounted) {
-          setEstablishments(estData);
-          if (estData.length > 0) {
-            setSelectedEstablishmentId(estData[0].id);
-          } else {
-            setLoading(false);
-          }
-        }
-      } catch (error) {
-        console.error(error);
-        if (isMounted) toast.error("Failed to load establishments filter.");
-      }
-    };
-
-    loadEstablishments();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [accessToken]);
-
-  useEffect(() => {
+  const refreshData = useCallback(() => {
     if (!accessToken || !selectedEstablishmentId) return;
-
-    let isMounted = true;
-
     const fetchProfessionals = async () => {
       try {
         setLoading(true);
@@ -120,29 +79,91 @@ export default function ProfessionalsTable() {
           accessToken,
           selectedEstablishmentId
         );
+        setData(professionals);
+      } catch (error) {
+        console.error(error);
+        toast.error("Failed to load professionals list.");
+        setData([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProfessionals();
+  }, [accessToken, selectedEstablishmentId]);
 
-        if (isMounted) {
-          setData(professionals);
+  useEffect(() => {
+    if (!accessToken) return;
+
+    const loadEstablishments = async () => {
+      try {
+        const estData = await EstablishmentDAO.getAll(accessToken);
+
+        setEstablishments(estData);
+        if (estData.length > 0) {
+          setSelectedEstablishmentId(estData[0].id);
+        } else {
+          setLoading(false);
         }
       } catch (error) {
         console.error(error);
-        if (isMounted) {
-          toast.error("Failed to load professionals list.");
-          setData([]);
-        }
-      } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
+        toast.error("Failed to load establishments filter.");
       }
     };
+    loadEstablishments();
+  }, [accessToken]);
 
-    fetchProfessionals();
+  useEffect(() => {
+    if (selectedEstablishmentId) {
+      refreshData();
+    }
+  }, [selectedEstablishmentId, accessToken, refreshData]);
+  // Handler de exclusão
+  const handleDelete = async (serviceId: string) => {
+    if (
+      !accessToken ||
+      !confirm("Are you sure you want to delete this service?")
+    )
+      return;
 
-    return () => {
-      isMounted = false;
-    };
-  }, [accessToken, selectedEstablishmentId]);
+    try {
+      await ProfessionalDAO.delete(serviceId, accessToken);
+      toast.success("Service deleted successfully.");
+      refreshData();
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to delete service.");
+    }
+  };
+
+  const columnsWithActions = columns.map((col) => {
+    if (col.id === "actions") {
+      return {
+        ...col,
+        cell: ({ row }) => {
+          return (
+            <div className="flex space-x-2">
+              <Link
+                href={`/dashboard/management/professionals/${row.original.id}`}
+              >
+                <Button variant="outline" size="icon" title="Edit">
+                  <Pencil className="h-4 w-4" />
+                </Button>
+              </Link>
+              <Button
+                variant="destructive"
+                size="icon"
+                title="Delete"
+                onClick={() => handleDelete(row.original.id)}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+          );
+        },
+      };
+    }
+    return col;
+  });
 
   if (loading && data.length === 0 && establishments.length === 0) {
     return (
@@ -176,7 +197,7 @@ export default function ProfessionalsTable() {
       </div>
 
       <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-        <DataTable columns={columns} data={data} />
+        <DataTable columns={columnsWithActions} data={data} />
       </div>
     </div>
   );
