@@ -24,3 +24,53 @@ export const professionalFormSchema = z.object({
 });
 
 export type ProfessionalFormValues = z.infer<typeof professionalFormSchema>;
+
+export enum AppointmentStatus {
+  PENDING_PAYMENT = "PENDING_PAYMENT",
+  CONFIRMED = "CONFIRMED",
+  CANCELED = "CANCELED",
+  COMPLETED = "COMPLETED",
+}
+
+export enum SchedulingType {
+  EXACT_TIME = "EXACT_TIME",
+  FIXED_SLOTS = "FIXED_SLOTS",
+}
+
+// ... imports
+
+// --- Tipos de Detalhe ---
+
+export interface ProfessionalDetail {
+  id: string;
+  name: string;
+}
+
+export interface ServiceDetail {
+  id: string;
+  name: string;
+  base_duration_minutes: number;
+  base_price: number; // Ou string, dependendo de como a API serializa Decimal
+}
+
+export interface ClientDetail {
+  id: string;
+  name: string;
+  email: string;
+}
+
+
+export interface AppointmentResponse {
+  id: string
+  start_dt: string // Data/hora de início
+  end_dt: string   // Data/hora de fim
+  status: AppointmentStatus
+  amount_paid: number
+  
+  // Detalhes carregados via JOINs do Backend
+  professional: ProfessionalDetail
+  service: ServiceDetail
+  client: ClientDetail
+}
+
+// ... o restante do DAO é o mesmo
