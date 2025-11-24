@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import KpiCard from "./kpi-cards";
 import AppointmentListItem from "./appointment-list-item";
+import { PopularServicesChart } from "./popular-services-chart";
 
 export function DashboardOverview() {
   const { accessToken } = useUserRole();
@@ -152,6 +153,7 @@ export function DashboardOverview() {
             </div>
           </CardContent>
         </Card>
+        <PopularServicesChart />
       </div>
     </div>
   );

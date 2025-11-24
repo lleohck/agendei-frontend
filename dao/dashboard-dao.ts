@@ -1,7 +1,5 @@
 import { api } from "@/lib/api";
-import { AppointmentStatus } from "@/lib/types"; // Garanta que AppointmentStatus é importado
-
-// --- Tipos de Resposta (Devem espelhar o DashboardSummary do Backend) ---
+import { AppointmentStatus } from "@/lib/types";
 
 export interface UpcomingAppointmentSummary {
   id: string;
@@ -27,14 +25,23 @@ export interface DashboardSummaryResponse {
   weekly_trend: WeeklyTrendPoint[];
 }
 
-// --- DAO ---
+export interface PopularServicePoint {
+  service_name: string;
+  appointment_count: number;
+}
 
 export const DashboardDAO = {
-  /**
-   * Obtém todas as métricas e a lista de agendamentos de hoje para o Dashboard.
-   */
   async getSummary(token: string): Promise<DashboardSummaryResponse> {
     const response = await api.get("/dashboard/summary", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  },
+
+  async getPopularServices(token: string): Promise<PopularServicePoint[]> {
+    const response = await api.get("/dashboard/popular-services", {
       headers: {
         Authorization: `Bearer ${token}`,
       },
