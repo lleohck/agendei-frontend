@@ -1,4 +1,5 @@
 import { ProfessionalForm } from "../components/professional-form";
+import { ProfessionalServicesForm } from "./components/professional-service-form";
 
 export default async function ProfessionalFormPage({
   params,
@@ -13,8 +14,10 @@ export default async function ProfessionalFormPage({
         Update the details for the new professional who will be part of your
         establishment.
       </p>
-
-      <ProfessionalForm professionalId={id} />
+      <div className="flex flex-row justify- gap-4">
+        <ProfessionalForm professionalId={id} />
+        <ProfessionalServicesForm professionalId={id} />
+      </div>
     </div>
   );
 }

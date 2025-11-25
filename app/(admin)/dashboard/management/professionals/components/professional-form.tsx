@@ -26,7 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton"; // Import do Skeleton
+import { Skeleton } from "@/components/ui/skeleton";
 
 import { ProfessionalDAO } from "@/dao/professional-dao";
 import {
