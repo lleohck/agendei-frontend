@@ -33,11 +33,14 @@ export function WeeklyTrendChart({ data }: WeeklyTrendChartProps) {
     );
   }
 
-  const formattedData = data.map((item) => ({
+  const formattedData = data.map((item, index) => ({
     ...item,
-    formattedDate: format(parseISO(item.week_start_date), "dd/MM", {
-      locale: ptBR,
-    }),
+    formattedDate:
+      `${index + 1}ª Semana | ` +
+      format(parseISO(item.week_start_date), "dd/MM", {
+        locale: ptBR,
+      }),
+    week_label: `${index + 1}ª Semana`,
   }));
 
   return (
