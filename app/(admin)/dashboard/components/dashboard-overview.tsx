@@ -13,6 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import KpiCard from "./kpi-cards";
 import AppointmentListItem from "./appointment-list-item";
 import { PopularServicesChart } from "./popular-services-chart";
+import { WeeklyTrendChart } from "./weekly-trend-chart";
 
 export function DashboardOverview() {
   const { accessToken } = useUserRole();
@@ -123,7 +124,7 @@ export function DashboardOverview() {
         </Card>
 
         {/* 3. Gráficos de Tendência */}
-        <Card className="lg:col-span-1">
+        {/* <Card className="lg:col-span-1">
           <CardHeader>
             <CardTitle>Tendência de Agendamentos (Últimas 4 Semanas)</CardTitle>
           </CardHeader>
@@ -152,7 +153,8 @@ export function DashboardOverview() {
               )}
             </div>
           </CardContent>
-        </Card>
+        </Card> */}
+        <WeeklyTrendChart data={summary.weekly_trend} />
         <PopularServicesChart />
         <KpiCard
           title="Taxa de Cancelamento (Mês)"
