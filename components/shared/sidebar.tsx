@@ -36,12 +36,6 @@ const navigationItems = [
     ],
   },
   {
-    name: "Establishments",
-    href: "/dashboard/management/establishments",
-    icon: Building2,
-    roles: [UserRole.ADMIN, UserRole.ESTABLISHMENT_OWNER],
-  },
-  {
     name: "Professionals",
     href: "/dashboard/management/professionals",
     icon: Users,
@@ -53,12 +47,6 @@ const navigationItems = [
     icon: Briefcase,
     roles: [UserRole.ADMIN, UserRole.ESTABLISHMENT_OWNER],
   }, // Apenas Owner/Admin gerenciam serviços
-  {
-    name: "Super Admin",
-    href: "/dashboard/admin/settings",
-    icon: Settings,
-    roles: [UserRole.ADMIN],
-  }, // Apenas o Admin Global vê isso
 ];
 
 export function Sidebar() {
@@ -100,6 +88,16 @@ export function Sidebar() {
           ))}
       </nav>
 
+      {[UserRole.ADMIN, UserRole.ESTABLISHMENT_OWNER].includes(userRole) && (
+        <Link
+          key="ajustes"
+          href="/dashboard/management/establishment"
+          className="flex items-center px-3 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition duration-150"
+        >
+          <Settings className="h-5 w-5 mr-3" />
+          Ajustes
+        </Link>
+      )}
       {/* Logout na parte inferior */}
       <div className="p-4 border-t border-gray-200 dark:border-gray-700">
         <LogoutButton />
