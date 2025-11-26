@@ -15,7 +15,6 @@ export default function ProfessionalsPage() {
           </Button>
         </Link>
       </div>
-
       <ProfessionalsTable />
     </div>
   );
