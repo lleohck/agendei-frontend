@@ -8,7 +8,7 @@ import { UserRole } from "./lib/types";
 const UNPROTECTED_ROUTES = ["/login", "/register", "/", "/api/auth"];
 
 // Define a rota padrão após login
-const DEFAULT_AUTH_REDIRECT = "/dashboard";
+const DEFAULT_AUTH_REDIRECT = "/admin/dashboard";
 
 // Rotas restritas que exigem papéis específicos.
 // A rota é prefixada e os papéis são a lista de quem PODE acessá-la.

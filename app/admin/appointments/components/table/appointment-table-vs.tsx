@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import { CheckCheck, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { AppointmentDAO } from "@/dao/appointment-dao";
-import { DataTableVirtualized } from "@/components/shared/data-table/data-table-virtualized";
 
 export default function AppointmentTableV2() {
   const { accessToken } = useUserRole();
@@ -43,7 +42,6 @@ export default function AppointmentTableV2() {
     }
 
     try {
-      // CHAMA O NOVO MÉTODO DO DAO
       await AppointmentDAO.updateStatus(
         appointmentId,
         AppointmentStatus.CANCELED,

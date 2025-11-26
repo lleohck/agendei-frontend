@@ -61,7 +61,7 @@ export function DashboardOverview() {
   if (!summary) return null;
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6">
       <h1 className="text-3xl font-bold">Dashboard Overview</h1>
 
       {/* 1. Cartões de Métricas (KPIs) */}

@@ -1,4 +1,4 @@
-import { AppointmentWizard } from "./components/appointment-wizard";
+import { AppointmentWizard } from "../components/appointment-wizard";
 
 // Este ID deve ser obtido dinamicamente no seu sistema real (e.g., via URL params ou contexto do usuário logado)
 // **SUBSTITUA ESTE VALOR PELO ID REAL DO ESTABELECIMENTO DE TESTE**

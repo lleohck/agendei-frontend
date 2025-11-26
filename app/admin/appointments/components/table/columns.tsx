@@ -7,7 +7,7 @@ import { ptBR } from "date-fns/locale";
 export const columns: ColumnDef<AppointmentResponse>[] = [
   {
     accessorKey: "date",
-    header: "Date",
+    header: "Data",
     cell: ({ row }) => {
       return format(parseISO(row.original.start_dt), "dd/MM/yyyy", {
         locale: ptBR,
@@ -16,7 +16,7 @@ export const columns: ColumnDef<AppointmentResponse>[] = [
   },
   {
     accessorKey: "time",
-    header: "Time",
+    header: "Hora",
     cell: ({ row }) => {
       return (
         `${format(parseISO(row.original.start_dt), "HH:mm")} - ` +
@@ -26,11 +26,11 @@ export const columns: ColumnDef<AppointmentResponse>[] = [
   },
   {
     accessorKey: "professional.name",
-    header: "Professional"
+    header: "Profissional",
   },
   {
     accessorKey: "service.name",
-    header: "Service"
+    header: "Serviço",
   },
   {
     accessorKey: "status",
@@ -39,8 +39,7 @@ export const columns: ColumnDef<AppointmentResponse>[] = [
   },
   {
     id: "actions",
-    header: "Actions",
-    // O conteúdo desta célula será substituído dinamicamente na função principal
+    header: "Ações",
     cell: () => <div />,
   },
 ];

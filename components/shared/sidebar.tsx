@@ -1,4 +1,4 @@
-"use client"; // Este componente precisa ser Client Component
+"use client";
 
 import Link from "next/link";
 import {
@@ -7,17 +7,15 @@ import {
   Settings,
   Users,
   Briefcase,
-  Building2,
 } from "lucide-react";
 import { LogoutButton } from "@/components/features/login/logout-button";
 import { useUserRole } from "@/hooks/use-user-role";
 import { UserRole } from "@/lib/types";
 
-// Defina os links de navegação e os papéis que DEVEM vê-los
 const navigationItems = [
   {
     name: "Dashboard",
-    href: "/dashboard",
+    href: "/admin/dashboard",
     icon: LayoutDashboard,
     roles: [
       UserRole.ADMIN,
@@ -26,8 +24,8 @@ const navigationItems = [
     ],
   },
   {
-    name: "Appointments",
-    href: "/dashboard/appointments",
+    name: "Agenda",
+    href: "/admin/appointments",
     icon: Calendar,
     roles: [
       UserRole.ADMIN,
@@ -36,17 +34,17 @@ const navigationItems = [
     ],
   },
   {
-    name: "Professionals",
-    href: "/dashboard/management/professionals",
+    name: "Profissionais",
+    href: "/admin/professionals",
     icon: Users,
     roles: [UserRole.ADMIN, UserRole.ESTABLISHMENT_OWNER],
-  }, // Apenas Owner/Admin gerenciam staff
+  },
   {
-    name: "Services",
-    href: "/dashboard/management/services",
+    name: "Serviços",
+    href: "/admin/services",
     icon: Briefcase,
     roles: [UserRole.ADMIN, UserRole.ESTABLISHMENT_OWNER],
-  }, // Apenas Owner/Admin gerenciam serviços
+  },
 ];
 
 export function Sidebar() {

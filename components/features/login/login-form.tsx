@@ -41,7 +41,7 @@ export function LoginForm() {
         toast.success("Login successful!", {
           description: "Redirecting to dashboard...",
         });
-        router.push("/dashboard");
+        router.push("/admin/dashboard");
       }
     } catch (error) {
       console.error(error);
