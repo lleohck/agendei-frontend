@@ -2,7 +2,17 @@
 
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { TrendingUp, CheckCircle } from "lucide-react";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  LabelList,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
+import { Star } from "lucide-react";
 
 import { useUserRole } from "@/hooks/use-user-role";
 import { DashboardDAO, PopularServicePoint } from "@/dao/dashboard-dao";
@@ -26,7 +36,6 @@ export function PopularServicesChart() {
         setServices(data);
       } catch (error) {
         toast.error("Failed to load popular services data.");
-        console.error("Popular Services error:", error);
       } finally {
         setLoading(false);
       }
@@ -36,51 +45,68 @@ export function PopularServicesChart() {
   }, [accessToken]);
 
   if (loading) {
-    return <Skeleton className="h-64 w-full" />;
+    return <Skeleton className="h-[350px] w-full rounded-xl" />;
   }
 
-  // Calcula o total para a barra de progresso (útil para gráficos de barra/donut)
-  const totalAppointments = services.reduce(
-    (sum, service) => sum + service.appointment_count,
-    0
-  );
-
   return (
-    <Card className="lg:col-span-1">
+    <Card className="col-span-1">
       <CardHeader>
-        <CardTitle className="flex items-center space-x-2">
-          <TrendingUp className="h-5 w-5" />
-          <span>Serviços Mais Populares (Mês)</span>
+        <CardTitle className="flex items-center gap-2">
+          <Star className="h-5 w-5 text-yellow-500" />
+          Serviços Mais Populares
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-0">
-        {services.length > 0 ? (
-          <div className="divide-y">
-            {services.map((service, index) => (
-              <div
-                key={service.service_name}
-                className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
+      <CardContent className="pl-0">
+        <div className="h-[300px] w-full">
+          {services.length > 0 ? (
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                layout="vertical"
+                data={services}
+                margin={{ top: 0, right: 30, left: 20, bottom: 0 }}
               >
-                <div className="flex items-center space-x-3">
-                  <span className="font-bold text-lg text-primary">
-                    {index + 1}.
-                  </span>
-                  <p className="font-medium">{service.service_name}</p>
-                </div>
-                <div className="text-right">
-                  <p className="font-semibold text-xl">
-                    {service.appointment_count}
-                  </p>
-                  <p className="text-sm text-gray-500">Agendamentos</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="p-6 text-gray-500 text-center">
-            Nenhum serviço agendado no último mês.
-          </p>
-        )}
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  horizontal={true}
+                  vertical={false}
+                />
+                <XAxis type="number" hide />
+                <YAxis
+                  dataKey="service_name"
+                  type="category"
+                  width={120}
+                  tick={{ fontSize: 12 }}
+                  interval={0}
+                />
+                <Tooltip
+                  cursor={{ fill: "transparent" }}
+                  contentStyle={{
+                    backgroundColor: "#fff",
+                    borderRadius: "8px",
+                    border: "1px solid #e5e7eb",
+                  }}
+                />
+                <Bar
+                  dataKey="appointment_count"
+                  fill="#10b981"
+                  radius={[0, 4, 4, 0]}
+                  name="Agendamentos"
+                  barSize={32}
+                >
+                  <LabelList
+                    dataKey="appointment_count"
+                    position="right"
+                    style={{ fill: "#333", fontSize: 12, fontWeight: 600 }}
+                  />
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="h-full flex items-center justify-center text-muted-foreground">
+              Sem dados de serviços.
+            </div>
+          )}
+        </div>
       </CardContent>
     </Card>
   );

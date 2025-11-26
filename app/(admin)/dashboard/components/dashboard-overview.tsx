@@ -124,36 +124,6 @@ export function DashboardOverview() {
         </Card>
 
         {/* 3. Gráficos de Tendência */}
-        {/* <Card className="lg:col-span-1">
-          <CardHeader>
-            <CardTitle>Tendência de Agendamentos (Últimas 4 Semanas)</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="h-64 flex flex-col items-center">
-              {summary.weekly_trend.map((point) => (
-                <div
-                  key={point.week_start_date}
-                  className="flex justify-between w-full p-1 border-b"
-                >
-                  <span className="text-sm text-gray-600">
-                    {format(parseISO(point.week_start_date), "dd MMM", {
-                      locale: ptBR,
-                    })}
-                  </span>
-                  <span className="font-semibold">
-                    {point.appointment_count} Agendamentos
-                  </span>
-                </div>
-              ))}
-
-              {summary.weekly_trend.length === 0 && (
-                <p className="text-gray-500 text-center">
-                  Dados insuficientes para tendência.
-                </p>
-              )}
-            </div>
-          </CardContent>
-        </Card> */}
         <WeeklyTrendChart data={summary.weekly_trend} />
         <PopularServicesChart />
         <KpiCard
