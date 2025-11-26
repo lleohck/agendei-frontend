@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import AppointmentTable from "./components/appointment-table";
+import AppointmentTableV2 from "./components/table/appointment-table-vs";
 
 export default function AppointmentsPage() {
   return (
@@ -15,7 +15,7 @@ export default function AppointmentsPage() {
           </Button>
         </Link>
       </div>
-      <AppointmentTable />
+      <AppointmentTableV2 />
     </div>
   );
 }
