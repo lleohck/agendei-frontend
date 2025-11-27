@@ -10,11 +10,7 @@ export default async function ProfessionalFormPage({
   const { id } = await params;
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold">Edit Professional Informations</h1>
-      <p className="text-gray-500 dark:text-gray-400">
-        Update the details for the new professional who will be part of your
-        establishment.
-      </p>
+      <h1 className="text-3xl font-bold">Editar Informações do Professional</h1>
       <div className="flex flex-row justify- gap-4">
         <ProfessionalForm professionalId={id} />
         <ProfessionalServicesForm professionalId={id} />

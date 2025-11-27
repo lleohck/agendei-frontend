@@ -7,11 +7,11 @@ export default function ProfessionalsPage() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Professionals Management</h1>
-        <Link href="/dashboard/management/professionals/new">
+        <h1 className="text-3xl font-bold">Professionais</h1>
+        <Link href="/admin/professionals/new">
           <Button>
             <Plus className="w-4 h-4 mr-2" />
-            Add Professional
+            Adicionar Profissional
           </Button>
         </Link>
       </div>

@@ -8,7 +8,7 @@ export default function AppointmentsPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Agendamentos</h1>
-        <Link href="/appointments/new">
+        <Link href="/admin/appointments/new">
           <Button>
             <Plus className="w-4 h-4 mr-2" />
             Novo Agendamento

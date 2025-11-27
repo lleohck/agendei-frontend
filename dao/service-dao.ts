@@ -5,9 +5,13 @@ export interface ServiceData {
   description?: string;
   base_price: number;
   base_duration_minutes: number;
-  establishment_id: string;
 }
-
+export interface ServiceCreateData {
+  name: string;
+  description?: string;
+  base_price: number;
+  base_duration_minutes: number;
+}
 export interface ServiceUpdateData {
   name?: string;
   description?: string;
@@ -21,7 +25,6 @@ export interface ServiceResponse {
   description?: string;
   base_price: number;
   base_duration_minutes: number;
-  establishment_id: string;
 }
 
 const ENDPOINT = "service";
@@ -48,10 +51,9 @@ export const ServiceDAO = {
   },
 
   async getAll(
-    token: string,
-    establishmentId: number | string
+    token: string
   ): Promise<ServiceResponse[]> {
-    const url = `/${ENDPOINT}/list?establishment_id=${establishmentId}`;
+    const url = `/${ENDPOINT}/list`;
     const response = await api.get(url, {
       headers: {
         Authorization: `Bearer ${token}`,

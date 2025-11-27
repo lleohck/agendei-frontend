@@ -7,11 +7,11 @@ export default function ServicesPage() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Services Management</h1>
-        <Link href="/dashboard/management/services/new">
+        <h1 className="text-3xl font-bold">Serviços</h1>
+        <Link href="/admin/services/new">
           <Button>
             <Plus className="w-4 h-4 mr-2" />
-            Add Service
+            Adicionar Serviço
           </Button>
         </Link>
       </div>

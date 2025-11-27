@@ -31,13 +31,18 @@ const formSchema = z.object({
   selectedServices: z
     .array(z.string())
     .refine((value) => value.some((item) => item), {
-      message: "You must select at least one service for the professional.",
+      message:
+        "Você deve selecionar pelo menos um serviço para o profissional.",
     }),
 });
 
 type ProfessionalServicesFormValues = z.infer<typeof formSchema>;
 
-export function ProfessionalServicesForm({professionalId}: {professionalId: string}) {
+export function ProfessionalServicesForm({
+  professionalId,
+}: {
+  professionalId: string;
+}) {
   const { accessToken, establishmentId } = useUserRole();
   const [loading, setLoading] = useState(true);
   const [allServices, setAllServices] = useState<ServiceResponse[]>([]);
@@ -73,7 +78,7 @@ export function ProfessionalServicesForm({professionalId}: {professionalId: stri
         });
       } catch (error) {
         console.error(error);
-        toast.error("Failed to load service association data.");
+        toast.error("Falha ao carregar dados de associação de serviços.");
       } finally {
         setLoading(false);
       }
@@ -84,7 +89,7 @@ export function ProfessionalServicesForm({professionalId}: {professionalId: stri
 
   async function onSubmit(data: ProfessionalServicesFormValues) {
     if (!accessToken) {
-      toast.error("Authentication token missing.");
+      toast.error("Token de autenticação ausente.");
       return;
     }
 
@@ -99,10 +104,10 @@ export function ProfessionalServicesForm({professionalId}: {professionalId: stri
         accessToken
       );
 
-      toast.success("Professional services updated successfully!");
+      toast.success("Serviços do profissional atualizados com sucesso!");
     } catch (error) {
-      console.error("Update failed:", error);
-      toast.error("Failed to update services.");
+      console.error("Falha na atualização:", error);
+      toast.error("Falha ao atualizar os serviços.");
     }
   }
 
@@ -127,10 +132,13 @@ export function ProfessionalServicesForm({professionalId}: {professionalId: stri
   return (
     <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow max-w-2xl">
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col justify-between h-full space-y-6">
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="flex flex-col justify-between h-full space-y-6"
+        >
           <div>
             <h2 className="text-xl font-semibold border-b pb-2">
-              Associated Services
+              Serviços Associados
             </h2>
 
             <FormField
@@ -140,46 +148,51 @@ export function ProfessionalServicesForm({professionalId}: {professionalId: stri
                 <FormItem>
                   <div className="mb-4">
                     <FormLabel className="text-base">
-                      Select the services this professional offers:
+                      Selecione os serviços que este profissional oferece:
                     </FormLabel>
                     <FormDescription>
-                      Only the services checked will be available for this
-                      professional.
+                      Apenas os serviços marcados estarão disponíveis para este
+                      profissional.
                     </FormDescription>
                   </div>
-                  {servicesOptions.map((item) => (
-                    <FormField
-                      key={item.id}
-                      control={form.control}
-                      name="selectedServices"
-                      render={({ field }) => {
-                        return (
-                          <FormItem
-                            key={item.id}
-                            className="flex flex-row items-start space-x-3 space-y-0"
-                          >
-                            <FormControl>
-                              <Checkbox
-                                checked={field.value?.includes(item.id)}
-                                onCheckedChange={(checked) => {
-                                  return checked
-                                    ? field.onChange([...field.value, item.id])
-                                    : field.onChange(
-                                        field.value?.filter(
-                                          (value) => value !== item.id
-                                        )
-                                      );
-                                }}
-                              />
-                            </FormControl>
-                            <FormLabel className="font-normal">
-                              {item.label}
-                            </FormLabel>
-                          </FormItem>
-                        );
-                      }}
-                    />
-                  ))}
+                  <div className="max-h-80 overflow-y-auto pr-4 space-y-2">
+                    {servicesOptions.map((item) => (
+                      <FormField
+                        key={item.id}
+                        control={form.control}
+                        name="selectedServices"
+                        render={({ field }) => {
+                          return (
+                            <FormItem
+                              key={item.id}
+                              className="flex flex-row items-start space-x-3 space-y-0"
+                            >
+                              <FormControl>
+                                <Checkbox
+                                  checked={field.value?.includes(item.id)}
+                                  onCheckedChange={(checked) => {
+                                    return checked
+                                      ? field.onChange([
+                                          ...field.value,
+                                          item.id,
+                                        ])
+                                      : field.onChange(
+                                          field.value?.filter(
+                                            (value) => value !== item.id
+                                          )
+                                        );
+                                  }}
+                                />
+                              </FormControl>
+                              <FormLabel className="font-normal cursor-pointer">
+                                {item.label}
+                              </FormLabel>
+                            </FormItem>
+                          );
+                        }}
+                      />
+                    ))}
+                  </div>
                   <FormMessage />
                 </FormItem>
               )}
@@ -193,10 +206,10 @@ export function ProfessionalServicesForm({professionalId}: {professionalId: stri
             {form.formState.isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Saving...
+                Salvando...
               </>
             ) : (
-              "Save Services"
+              "Salvar Serviços"
             )}
           </Button>
         </form>

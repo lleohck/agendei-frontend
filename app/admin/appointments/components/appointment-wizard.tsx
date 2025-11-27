@@ -24,18 +24,13 @@ import { format, isToday } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Loader2 } from "lucide-react";
 
-// --- ESTADOS DO WIZARD ---
 enum Step {
   SERVICE_PROFESSIONAL,
   DATE_TIME,
   CONFIRMATION,
 }
 
-export function AppointmentWizard({
-  establishmentId,
-}: {
-  establishmentId: string;
-}) {
+export function AppointmentWizard() {
   const { accessToken } = useUserRole();
   const [currentStep, setCurrentStep] = useState<Step>(
     Step.SERVICE_PROFESSIONAL
@@ -63,29 +58,27 @@ export function AppointmentWizard({
     []
   );
 
-  // 1. Efeito para carregar Serviços e Profissionais (início)
   useEffect(() => {
-    if (!accessToken || !establishmentId) return;
+    if (!accessToken) return;
 
     const loadInitialData = async () => {
       try {
         const [servicesData, professionalsData] = await Promise.all([
-          ServiceDAO.getAll(accessToken, establishmentId),
-          ProfessionalDAO.getAll(accessToken, establishmentId),
+          ServiceDAO.getAll(accessToken),
+          ProfessionalDAO.getAll(accessToken),
         ]);
         setAllServices(servicesData);
         setAllProfessionals(professionalsData);
       } catch (error) {
-        toast.error("Failed to load essential data.");
+        toast.error("Falha ao carregar dados essenciais.");
         console.error(error);
       } finally {
         setLoading(false);
       }
     };
     loadInitialData();
-  }, [accessToken, establishmentId]);
+  }, [accessToken]);
 
-  // 2. Efeito para buscar Slots Disponíveis (ao mudar data/serviço/profissional)
   useEffect(() => {
     if (
       currentStep !== Step.DATE_TIME ||
@@ -109,8 +102,9 @@ export function AppointmentWizard({
           accessToken
         );
         setAvailableSlots(slots);
+        setSelectedSlot(undefined); // Limpa o slot selecionado ao mudar a data/seleção
       } catch (error) {
-        toast.error("Failed to load available slots.");
+        toast.error("Falha ao carregar horários disponíveis.");
       } finally {
         setLoading(false);
       }
@@ -133,7 +127,7 @@ export function AppointmentWizard({
       !selectedSlot ||
       !accessToken
     ) {
-      toast.error("Please ensure all fields are selected.");
+      toast.error("Por favor, selecione todos os campos necessários.");
       return;
     }
 
@@ -141,18 +135,18 @@ export function AppointmentWizard({
       professional_id: selectedProfessionalId,
       service_id: selectedServiceId,
       start_dt: selectedSlot,
-      establishment_id: establishmentId,
     };
 
     try {
       setLoading(true);
       await AppointmentDAO.create(payload, accessToken);
-      toast.success("Appointment successfully booked!");
+      toast.success("Agendamento realizado com sucesso!");
       setCurrentStep(Step.CONFIRMATION); // Mudar para tela final
     } catch (error: any) {
       console.error(error);
       const detail =
-        error.response?.data?.detail || "Booking failed due to a server error.";
+        error.response?.data?.detail ||
+        "O agendamento falhou devido a um erro no servidor.";
       toast.error(detail);
     } finally {
       setLoading(false);
@@ -172,7 +166,7 @@ export function AppointmentWizard({
     if (availableSlots.length === 0)
       return (
         <p className="text-sm text-gray-500">
-          No slots available for this date/selection.
+          Nenhum horário disponível para esta data/seleção.
         </p>
       );
 
@@ -217,17 +211,17 @@ export function AppointmentWizard({
     return (
       <div className="text-center p-10 space-y-4">
         <h2 className="text-2xl font-bold text-green-600">
-          🎉 Success! Appointment Confirmed.
+          🎉 Sucesso! Agendamento Confirmado.
         </h2>
-        <p>Your appointment has been successfully booked.</p>
-        <Button onClick={() => window.location.reload()}>Book Another</Button>
+        <p>Seu agendamento foi realizado com sucesso.</p>
+        <Button onClick={() => window.location.reload()}>Agendar Outro</Button>
       </div>
     );
   }
 
   return (
     <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-bold">Book Your Service</h1>
+      <h1 className="text-2xl font-bold">Agende seu Serviço</h1>
 
       {/* 1. SELEÇÃO DE SERVIÇO E PROFISSIONAL */}
       <div
@@ -238,93 +232,108 @@ export function AppointmentWizard({
         }`}
       >
         <h2 className="text-xl font-semibold">
-          Step 1: Service & Professional
+          Passo 1: Serviço e Profissional
         </h2>
-        <Select onValueChange={setSelectedServiceId} value={selectedServiceId}>
-          <SelectTrigger>
-            <SelectValue placeholder="Select Service" />
-          </SelectTrigger>
-          <SelectContent>
-            {allServices.map((s) => (
-              <SelectItem key={s.id} value={s.id}>
-                {s.name} (R${s.base_price.toFixed(2)})
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="flex items-center gap-5">
+          <Select
+            onValueChange={setSelectedServiceId}
+            value={selectedServiceId}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Selecione o Serviço" />
+            </SelectTrigger>
+            <SelectContent>
+              {allServices.map((s) => (
+                <SelectItem key={s.id} value={s.id}>
+                  {s.name} (R${s.base_price.toFixed(2)})
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
-        <Select
-          onValueChange={setSelectedProfessionalId}
-          value={selectedProfessionalId}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Select Professional" />
-          </SelectTrigger>
-          <SelectContent>
-            {allProfessionals.map((p) => (
-              <SelectItem key={p.id} value={p.id}>
-                {p.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
+          <Select
+            onValueChange={setSelectedProfessionalId}
+            value={selectedProfessionalId}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Selecione o Profissional" />
+            </SelectTrigger>
+            <SelectContent>
+              {allProfessionals.map((p) => (
+                <SelectItem key={p.id} value={p.id}>
+                  {p.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
         <Button
           onClick={() => setCurrentStep(Step.DATE_TIME)}
           disabled={!selectedServiceId || !selectedProfessionalId}
           className="w-full"
         >
-          Select Date & Time
+          Selecionar Data e Horário
         </Button>
       </div>
 
       {/* 2. SELEÇÃO DE DATA E HORÁRIO */}
       {currentStep === Step.DATE_TIME && (
         <div className="space-y-4 border-t pt-4">
-          <h2 className="text-xl font-semibold">Step 2: Date & Time</h2>
+          <h2 className="text-xl font-semibold">Passo 2: Data e Horário</h2>
 
-          <div className="flex flex-col md:flex-row gap-6">
+          <div className="flex flex-col md:flex-row gap-6 h-full">
             <div className="md:w-1/2">
-              <h3 className="text-lg mb-2">Select Date</h3>
+              <h3 className="text-lg mb-2">Selecione a Data</h3>
               <Calendar
                 mode="single"
                 selected={selectedDate}
                 onSelect={setSelectedDate}
-                disabled={(date) => date < new Date() && !isToday(date)} // Disable past dates
+                // Desabilita datas passadas (exceto hoje para horários futuros)
+                disabled={(date) => date < new Date() && !isToday(date)}
                 initialFocus
                 locale={ptBR}
               />
             </div>
 
-            <div className="md:w-1/2">
-              <h3 className="text-lg mb-2">
-                Available Slots (
-                {selectedDate ? format(selectedDate, "dd/MM") : "Select Date"})
-              </h3>
-              {renderSlots}
+            {/* SELEÇÃO DE HORÁRIO E BOTÕES - Implementação da UX solicitada */}
+            <div className="md:w-1/2 h-[350px] md:h-full">
+              <div className="flex flex-col h-full justify-between">
+                {/* 1. Conteúdo de Slots (Flex Grow) */}
+                <div className="flex-grow overflow-hidden">
+                  <h3 className="text-lg mb-2">
+                    Horários Disponíveis (
+                    {selectedDate
+                      ? format(selectedDate, "dd/MM", { locale: ptBR }) // Formato ptBR
+                      : "Selecione a Data"}
+                    )
+                  </h3>
+                  {renderSlots}
+                </div>
 
-              <div className="mt-6">
-                <Button
-                  onClick={handleBookAppointment}
-                  disabled={!selectedSlot || loading}
-                  className="w-full"
-                >
-                  {loading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />{" "}
-                      Booking...
-                    </>
-                  ) : (
-                    "Confirm Booking"
-                  )}
-                </Button>
-                <Button
-                  variant="link"
-                  onClick={() => setCurrentStep(Step.SERVICE_PROFESSIONAL)}
-                  className="w-full"
-                >
-                  Back
-                </Button>
+                {/* 2. Botões (Fixo no Bottom) */}
+                <div className="space-y-2 mt-4 pt-4 border-t">
+                  <Button
+                    onClick={handleBookAppointment}
+                    disabled={!selectedSlot || loading}
+                    className="w-full"
+                  >
+                    {loading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />{" "}
+                        Agendando...
+                      </>
+                    ) : (
+                      "Confirmar Agendamento"
+                    )}
+                  </Button>
+                  <Button
+                    variant="link"
+                    onClick={() => setCurrentStep(Step.SERVICE_PROFESSIONAL)}
+                    className="w-full"
+                  >
+                    Voltar
+                  </Button>
+                </div>
               </div>
             </div>
           </div>

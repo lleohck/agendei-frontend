@@ -89,7 +89,7 @@ export function Sidebar() {
       {[UserRole.ADMIN, UserRole.ESTABLISHMENT_OWNER].includes(userRole) && (
         <Link
           key="ajustes"
-          href="/dashboard/management/establishment"
+          href="/admin/establishment"
           className="flex items-center px-3 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition duration-150"
         >
           <Settings className="h-5 w-5 mr-3" />

@@ -6,34 +6,22 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUserRole } from "@/hooks/use-user-role";
 import { ProfessionalDAO, ProfessionalResponse } from "@/dao/professional-dao";
-import {
-  EstablishmentDAO,
-  EstablishmentResponse,
-} from "@/dao/establishment-dao";
+// EstabelecimentoDAO e EstablishmentResponse foram removidos
 import { useState, useEffect, useCallback } from "react";
 import { Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+// Selects de filtro de estabelecimento foram removidos
 import Link from "next/link";
 
+// --- COLUNAS DA TABELA ---
 export const columns: ColumnDef<ProfessionalResponse>[] = [
   {
     accessorKey: "name",
-    header: "Name",
+    header: "Nome",
   },
   {
     accessorKey: "email",
-    header: "Email",
-  },
-  {
-    accessorKey: "role",
-    header: "Role",
+    header: "E-mail",
   },
   {
     accessorKey: "is_active",
@@ -48,90 +36,60 @@ export const columns: ColumnDef<ProfessionalResponse>[] = [
               : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
           }`}
         >
-          {is_active ? "Active" : "Inactive"}
+          {is_active ? "Ativo" : "Inativo"}
         </span>
       );
     },
   },
   {
     id: "actions",
-    header: "Actions",
+    header: "Ações",
     cell: () => <div />,
   },
 ];
 
 export default function ProfessionalsTable() {
   const [data, setData] = useState<ProfessionalResponse[]>([]);
-  const [establishments, setEstablishments] = useState<EstablishmentResponse[]>(
-    []
-  );
-  const [selectedEstablishmentId, setSelectedEstablishmentId] =
-    useState<string>("");
   const [loading, setLoading] = useState(true);
   const { accessToken } = useUserRole();
 
   const refreshData = useCallback(() => {
-    if (!accessToken || !selectedEstablishmentId) return;
+    if (!accessToken) return;
     const fetchProfessionals = async () => {
       try {
         setLoading(true);
-        const professionals = await ProfessionalDAO.getAll(
-          accessToken,
-          selectedEstablishmentId
-        );
+        const professionals = await ProfessionalDAO.getAll(accessToken);
         setData(professionals);
       } catch (error) {
         console.error(error);
-        toast.error("Failed to load professionals list.");
+        toast.error("Falha ao carregar a lista de profissionais.");
         setData([]);
       } finally {
         setLoading(false);
       }
     };
     fetchProfessionals();
-  }, [accessToken, selectedEstablishmentId]);
-
-  useEffect(() => {
-    if (!accessToken) return;
-
-    const loadEstablishments = async () => {
-      try {
-        const estData = await EstablishmentDAO.getAll(accessToken);
-
-        setEstablishments(estData);
-        if (estData.length > 0) {
-          setSelectedEstablishmentId(estData[0].id);
-        } else {
-          setLoading(false);
-        }
-      } catch (error) {
-        console.error(error);
-        toast.error("Failed to load establishments filter.");
-      }
-    };
-    loadEstablishments();
   }, [accessToken]);
 
   useEffect(() => {
-    if (selectedEstablishmentId) {
+    if (accessToken) {
       refreshData();
     }
-  }, [selectedEstablishmentId, accessToken, refreshData]);
-  // Handler de exclusão
-  const handleDelete = async (serviceId: string) => {
-    if (
-      !accessToken ||
-      !confirm("Are you sure you want to delete this service?")
-    )
-      return;
+  }, [accessToken, refreshData]);
+
+  const handleDelete = async (professionalId: string) => {
+    const confirmed = window.confirm(
+      "Tem certeza que deseja deletar este profissional? Esta ação é irreversível."
+    );
+    if (!accessToken || !confirmed) return;
 
     try {
-      await ProfessionalDAO.delete(serviceId, accessToken);
-      toast.success("Service deleted successfully.");
+      await ProfessionalDAO.delete(professionalId, accessToken);
+      toast.success("Profissional deletado com sucesso.");
       refreshData();
     } catch (error) {
       console.error(error);
-      toast.error("Failed to delete service.");
+      toast.error("Falha ao deletar o profissional.");
     }
   };
 
@@ -139,20 +97,18 @@ export default function ProfessionalsTable() {
     if (col.id === "actions") {
       return {
         ...col,
-        cell: ({ row }) => {
+        cell: ({ row }: { row: ProfessionalResponse }) => {
           return (
             <div className="flex space-x-2">
-              <Link
-                href={`/dashboard/management/professionals/${row.original.id}`}
-              >
-                <Button variant="outline" size="icon" title="Edit">
+              <Link href={`/admin/professionals/${row.original.id}`}>
+                <Button variant="outline" size="icon" title="Editar">
                   <Pencil className="h-4 w-4" />
                 </Button>
               </Link>
               <Button
                 variant="destructive"
                 size="icon"
-                title="Delete"
+                title="Deletar"
                 onClick={() => handleDelete(row.original.id)}
               >
                 <Trash2 className="h-4 w-4" />
@@ -165,10 +121,10 @@ export default function ProfessionalsTable() {
     return col;
   });
 
-  if (loading && data.length === 0 && establishments.length === 0) {
+  if (loading && data.length === 0) {
     return (
       <div className="space-y-4">
-        <Skeleton className="h-10 w-[200px]" />
+        <Skeleton className="h-10 w-full" />
         <Skeleton className="h-12 w-full" />
         <Skeleton className="h-12 w-full" />
         <Skeleton className="h-12 w-full" />
@@ -176,26 +132,27 @@ export default function ProfessionalsTable() {
     );
   }
 
+  // Aviso: Se a lista de profissionais estiver vazia, o carregamento deve ser 'false'
+  if (data.length === 0 && !loading) {
+    return (
+      <div className="p-6 text-center border-2 border-dashed rounded-lg">
+        <h3 className="text-lg font-semibold">
+          Nenhum profissional encontrado.
+        </h3>
+        <p className="text-sm text-gray-500 mb-4">
+          Cadastre o primeiro profissional para começar a agendar.
+        </p>
+        <Link href="/dashboard/management/professionals/create">
+          <Button>Cadastrar Profissional</Button>
+        </Link>
+      </div>
+    );
+  }
+
+  // O Select de filtro de estabelecimento foi removido do JSX
+
   return (
     <div className="space-y-4">
-      <div className="w-[250px]">
-        <Select
-          value={selectedEstablishmentId}
-          onValueChange={setSelectedEstablishmentId}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Select Establishment" />
-          </SelectTrigger>
-          <SelectContent>
-            {establishments.map((est) => (
-              <SelectItem key={est.id} value={est.id.toString()}>
-                {est.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
       <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
         <DataTable columns={columnsWithActions} data={data} />
       </div>

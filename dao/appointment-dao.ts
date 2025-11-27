@@ -6,8 +6,7 @@ import { AppointmentResponse, AppointmentStatus } from "@/lib/types"; // Assumin
 export interface AppointmentCreateData {
   professional_id: string;
   service_id: string;
-  establishment_id: string;
-  start_dt: string; // Deve ser uma string ISO 8601 (Ex: 2025-12-01T10:00:00)
+  start_dt: string;
 }
 
 // A rota /availability retorna uma lista de strings (datetimes)

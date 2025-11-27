@@ -4,7 +4,23 @@ export interface ProfessionalData {
   name: string;
   email: string;
   password: string;
-  establishment_id: string;
+  bio?: string;
+  scheduling_type: "EXACT_TIME" | "FIXED_SLOTS";
+  slot_interval_minutes: number;
+}
+
+export interface ProfessionalCreateData {
+  name: string;
+  email: string;
+  password: string;
+  bio?: string;
+  scheduling_type: "EXACT_TIME" | "FIXED_SLOTS";
+  slot_interval_minutes: number;
+}
+
+export interface ProfessionalUpdateData {
+  name: string;
+  email: string;
   bio?: string;
   scheduling_type: "EXACT_TIME" | "FIXED_SLOTS";
   slot_interval_minutes: number;
@@ -14,7 +30,6 @@ export interface ProfessionalResponse {
   id: string;
   email: string;
   name: string;
-  role: string;
   is_active: boolean;
 }
 
@@ -74,11 +89,8 @@ export const ProfessionalDAO = {
     return response.data;
   },
 
-  async getAll(
-    token: string,
-    establishmentId: string
-  ): Promise<ProfessionalResponse[]> {
-    const url = `/professional/list?establishment_id=${establishmentId}`;
+  async getAll(token: string): Promise<ProfessionalResponse[]> {
+    const url = `/professional/list`;
 
     const response = await api.get(url, {
       headers: {
