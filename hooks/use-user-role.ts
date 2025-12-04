@@ -1,7 +1,7 @@
 import { useSession } from "next-auth/react";
 import { jwtDecode } from "jwt-decode";
 
-enum UserRole {
+export enum UserRole {
   ADMIN = "ADMIN",
   ESTABLISHMENT_OWNER = "ESTABLISHMENT_OWNER",
   PROFESSIONAL = "PROFESSIONAL",
@@ -11,47 +11,49 @@ enum UserRole {
 
 interface DecodedToken {
   role: UserRole;
-  establishment_id?: number;
+  establishment_id: string;
 }
 
-export function useUserRole() {
+interface UseUserRoleResult {
+  userRole: UserRole;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  accessToken: string;
+  establishmentId: string;
+}
+
+export function useUserRole(): UseUserRoleResult {
   const { data: session, status } = useSession();
+
   const isAuthenticated = status === "authenticated";
   const isLoading = status === "loading";
+  const accessToken = session?.accessToken ?? "";
   let userRole = UserRole.GUEST;
-  const accessToken = session?.accessToken as string | undefined;
-  let establishmentId: number | undefined;
+  let establishmentId = "";
 
   if (!isAuthenticated || !accessToken) {
     return {
       userRole,
       isAuthenticated,
       isLoading,
-      accessToken: undefined,
-      establishmentId: undefined,
+      accessToken: "",
+      establishmentId: "",
     };
   }
 
   try {
-    const decoded = jwtDecode(accessToken) as DecodedToken;
+    const decoded = jwtDecode<DecodedToken>(accessToken);
     userRole = decoded.role;
     establishmentId = decoded.establishment_id;
-
-    return {
-      userRole,
-      isAuthenticated,
-      isLoading,
-      accessToken,
-      establishmentId,
-    };
-  } catch (e) {
-    console.error("Failed to decode token on frontend:", e);
-    return {
-      userRole: UserRole.GUEST,
-      isAuthenticated,
-      isLoading,
-      accessToken: undefined,
-      establishmentId: undefined,
-    };
+  } catch (error) {
+    console.error("Failed to decode JWT:", error);
   }
+
+  return {
+    userRole,
+    isAuthenticated,
+    isLoading,
+    accessToken,
+    establishmentId,
+  };
 }

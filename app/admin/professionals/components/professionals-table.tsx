@@ -6,14 +6,11 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUserRole } from "@/hooks/use-user-role";
 import { ProfessionalDAO, ProfessionalResponse } from "@/dao/professional-dao";
-// EstabelecimentoDAO e EstablishmentResponse foram removidos
 import { useState, useEffect, useCallback } from "react";
 import { Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-// Selects de filtro de estabelecimento foram removidos
 import Link from "next/link";
 
-// --- COLUNAS DA TABELA ---
 export const columns: ColumnDef<ProfessionalResponse>[] = [
   {
     accessorKey: "name",
@@ -77,11 +74,13 @@ export default function ProfessionalsTable() {
     }
   }, [accessToken, refreshData]);
 
-  const handleDelete = async (professionalId: string) => {
-    const confirmed = window.confirm(
-      "Tem certeza que deseja deletar este profissional? Esta ação é irreversível."
-    );
-    if (!accessToken || !confirmed) return;
+  const handleDelete = async (
+    professionalId: string,
+    profissionalName: string
+  ) => {
+    if (!accessToken) return;
+
+    toast.warning(`Excluindo o Profissional: ${profissionalName}...`);
 
     try {
       await ProfessionalDAO.delete(professionalId, accessToken);
@@ -97,7 +96,7 @@ export default function ProfessionalsTable() {
     if (col.id === "actions") {
       return {
         ...col,
-        cell: ({ row }: { row: ProfessionalResponse }) => {
+        cell: ({ row }: { row: { original: ProfessionalResponse } }) => {
           return (
             <div className="flex space-x-2">
               <Link href={`/admin/professionals/${row.original.id}`}>
@@ -108,8 +107,8 @@ export default function ProfessionalsTable() {
               <Button
                 variant="destructive"
                 size="icon"
-                title="Deletar"
-                onClick={() => handleDelete(row.original.id)}
+                title="Excluir"
+                onClick={() => handleDelete(row.original.id, row.original.name)}
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
@@ -132,7 +131,6 @@ export default function ProfessionalsTable() {
     );
   }
 
-  // Aviso: Se a lista de profissionais estiver vazia, o carregamento deve ser 'false'
   if (data.length === 0 && !loading) {
     return (
       <div className="p-6 text-center border-2 border-dashed rounded-lg">
@@ -142,14 +140,12 @@ export default function ProfessionalsTable() {
         <p className="text-sm text-gray-500 mb-4">
           Cadastre o primeiro profissional para começar a agendar.
         </p>
-        <Link href="/dashboard/management/professionals/create">
+        <Link href="/admin/professionals/new">
           <Button>Cadastrar Profissional</Button>
         </Link>
       </div>
     );
   }
-
-  // O Select de filtro de estabelecimento foi removido do JSX
 
   return (
     <div className="space-y-4">

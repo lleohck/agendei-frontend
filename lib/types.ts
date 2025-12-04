@@ -72,5 +72,3 @@ export interface AppointmentResponse {
   service: ServiceDetail
   client: ClientDetail
 }
-
-// ... o restante do DAO é o mesmo

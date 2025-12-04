@@ -61,7 +61,7 @@ export function ProfessionalServicesForm({
     const fetchData = async () => {
       try {
         // 1. Buscar todos os serviços do estabelecimento
-        const all = await ServiceDAO.getAll(accessToken, establishmentId);
+        const all = await ServiceDAO.getAll(accessToken);
         setAllServices(all);
 
         // 2. Buscar serviços atualmente associados ao profissional

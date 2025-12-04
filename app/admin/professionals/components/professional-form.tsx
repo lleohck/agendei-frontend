@@ -41,18 +41,17 @@ const baseProfessionalSchema = z.object({
     .string()
     .min(2, { message: "O nome deve ter pelo menos 2 caracteres." }),
   email: z.string().email({ message: "Endereço de e-mail inválido." }),
-  bio: z.string().nullable().optional(),
+  bio: z.string().optional(),
   schedulingType: z.enum(["EXACT_TIME", "FIXED_SLOTS"]),
-  slotIntervalMinutes: z.coerce
+  slotIntervalMinutes: z
     .number()
     .min(5, "O intervalo deve ser de no mínimo 5 minutos.")
     .max(120, "O intervalo máximo é de 120 minutos."),
 });
 
-interface ProfessionalFormValues
-  extends z.infer<typeof baseProfessionalSchema> {
-  password: string;
-}
+type ProfessionalFormValues = z.infer<
+  ReturnType<typeof getProfessionalFormSchema>
+>;
 
 const getProfessionalFormSchema = (isEditing: boolean) => {
   const passwordSchema = isEditing
@@ -159,6 +158,7 @@ export function ProfessionalForm({
 
         await ProfessionalDAO.create(createPayload, accessToken);
         toast.success("Profissional cadastrado com sucesso!");
+        router.push("/admin/professionals");
       } else {
         const updatePayload: ProfessionalUpdateData = {
           ...payloadBase,
@@ -172,7 +172,6 @@ export function ProfessionalForm({
         );
         toast.success("Profissional atualizado com sucesso!");
       }
-      router.push("/admin/professionals");
     } catch (error) {
       console.error("Falha na operação:", error);
       toast.error("Falha na operação. Verifique seus dados.");

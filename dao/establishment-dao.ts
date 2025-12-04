@@ -2,7 +2,7 @@ import { api } from "@/lib/api";
 
 export interface EstablishmentData {
   name: string;
-  slug: string;
+  slug?: string;
   address?: string;
   logo_url?: string;
 }

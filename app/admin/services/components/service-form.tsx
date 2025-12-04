@@ -27,16 +27,15 @@ import {
 import { useUserRole } from "@/hooks/use-user-role";
 import { Skeleton } from "@/components/ui/skeleton";
 
-// Define o schema de validação para criação e edição (os campos são os mesmos)
 const formSchema = z.object({
   name: z
     .string()
     .min(2, { message: "O nome deve ter pelo menos 2 caracteres." }),
   description: z.string().optional(),
-  basePrice: z.coerce
+  basePrice: z
     .number()
     .min(0, { message: "O preço base não pode ser negativo." }),
-  baseDurationMinutes: z.coerce
+  baseDurationMinutes: z
     .number()
     .min(5, { message: "A duração mínima é de 5 minutos." }),
 });
@@ -44,15 +43,14 @@ const formSchema = z.object({
 type ServiceFormValues = z.infer<typeof formSchema>;
 
 interface ServiceFormProps {
-  serviceId?: string; // Opcional para o modo de Criação
+  serviceId?: string;
 }
 
 export function ServiceForm({ serviceId }: ServiceFormProps) {
   const router = useRouter();
   const { accessToken, establishmentId } = useUserRole();
-  const [loadingInitial, setLoadingInitial] = useState(!!serviceId); // Só carrega se for Edição
+  const [loadingInitial, setLoadingInitial] = useState(!!serviceId);
 
-  // Verifica o modo
   const isEditing = !!serviceId;
 
   const form = useForm<ServiceFormValues>({
@@ -60,12 +58,11 @@ export function ServiceForm({ serviceId }: ServiceFormProps) {
     defaultValues: {
       name: "",
       description: "",
-      basePrice: 0,
+      basePrice: 10,
       baseDurationMinutes: 30,
     },
   });
 
-  // Efeito para carregar os dados iniciais do serviço (somente no modo Edição)
   useEffect(() => {
     if (!accessToken || !serviceId) {
       setLoadingInitial(false);
@@ -83,6 +80,7 @@ export function ServiceForm({ serviceId }: ServiceFormProps) {
           baseDurationMinutes: data.base_duration_minutes,
         });
       } catch (error) {
+        console.error(error);
         toast.error("Falha ao carregar dados do serviço.");
         router.push("/admin/services");
       } finally {
@@ -101,7 +99,6 @@ export function ServiceForm({ serviceId }: ServiceFormProps) {
 
     try {
       if (isEditing) {
-        // --- ATUALIZAÇÃO (PUT/PATCH) ---
         const updatePayload: ServiceUpdateData = {
           name: data.name,
           description: data.description,
@@ -110,14 +107,13 @@ export function ServiceForm({ serviceId }: ServiceFormProps) {
         };
 
         await ServiceDAO.update(
-          serviceId!, // ServiceId garantido no modo de edição
+          serviceId!,
           updatePayload,
           accessToken
         );
 
         toast.success("Serviço atualizado com sucesso!");
       } else {
-        // --- CRIAÇÃO (POST) ---
         const createPayload: ServiceCreateData = {
           name: data.name,
           description: data.description,
@@ -200,7 +196,6 @@ export function ServiceForm({ serviceId }: ServiceFormProps) {
                       step="0.01"
                       {...field}
                       onChange={(e) =>
-                        // Garante que o valor é um número (float) para o hook form
                         field.onChange(parseFloat(e.target.value) || 0)
                       }
                     />
@@ -221,7 +216,6 @@ export function ServiceForm({ serviceId }: ServiceFormProps) {
                       type="number"
                       {...field}
                       onChange={(e) =>
-                        // Garante que o valor é um número inteiro
                         field.onChange(parseInt(e.target.value) || 0)
                       }
                     />

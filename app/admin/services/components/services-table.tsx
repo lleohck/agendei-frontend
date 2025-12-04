@@ -90,7 +90,7 @@ export default function ServicesTable() {
     if (col.id === "actions") {
       return {
         ...col,
-        cell: ({ row }) => {
+        cell: ({ row }: {row: {original: ServiceResponse}}) => {
           return (
             <div className="flex space-x-2">
               <Link href={`/admin/services/${row.original.id}`}>

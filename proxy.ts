@@ -20,7 +20,7 @@ const ROLE_ROUTES: { [key: string]: UserRole[] } = {
   "/dashboard/management/": [UserRole.ESTABLISHMENT_OWNER, UserRole.ADMIN],
 };
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   // 1. Tenta obter o token

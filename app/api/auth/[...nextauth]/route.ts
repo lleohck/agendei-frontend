@@ -1,15 +1,14 @@
-import NextAuth from "next-auth"
-import CredentialsProvider from "next-auth/providers/credentials"
-import { api } from "@/lib/api"
-import axios from "axios"
+import NextAuth, { NextAuthOptions } from "next-auth";
+import CredentialsProvider from "next-auth/providers/credentials";
+import { api } from "@/lib/api";
+import axios from "axios";
 
-// Este é o token retornado pelo FastAPI
 interface FastApiToken {
-  access_token: string
-  token_type: string
+  access_token: string;
+  token_type: string;
 }
 
-const authOptions = {
+const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
       name: "Credentials",
@@ -18,69 +17,71 @@ const authOptions = {
         password: { label: "Password", type: "password" },
       },
       authorize: async (credentials) => {
-        // 1. Chama o endpoint de login do FastAPI
         try {
-          const response = await api.post<FastApiToken>("/token", new URLSearchParams({
-            username: credentials.email as string,
-            password: credentials.password as string,
-          }), {
-            headers: {
-              "Content-Type": "application/x-www-form-urlencoded",
-            },
-          })
+          const response = await api.post<FastApiToken>(
+            "/token",
+            new URLSearchParams({
+              username: credentials?.email ?? "",
+              password: credentials?.password ?? "",
+            }),
+            { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
+          );
 
-          const tokenData = response.data
-          
-          // 2. Aqui, usamos o token do FastAPI como o objeto 'user' do NextAuth
+          const tokenData = response.data;
+
           if (tokenData.access_token) {
-            // O objeto retornado aqui é armazenado no JWT do NextAuth
+            // O objeto `user` retorna para o callback jwt
             return {
-              id: "jwt_user_id", // ID Fixo ou o ID do user se você o retornasse do FastAPI
-              tokenType: tokenData.token_type,
+              id: "jwt_user_id",
+              email: credentials?.email ?? "",
               accessToken: tokenData.access_token,
-              email: credentials.email as string,
-            }
+              tokenType: tokenData.token_type,
+            };
           }
+
+          return null;
         } catch (error) {
           if (axios.isAxiosError(error) && error.response?.status === 401) {
-            return null
+            return null;
           }
-          console.error("Login API Error:", error)
-          throw new Error("Login failed due to server error.")
+          console.error("Login API Error:", error);
+          throw new Error("Login failed due to server error.");
         }
-        return null
       },
     }),
   ],
-  // Configura a estratégia de sessão para usar JWT
-  session: {
-    strategy: "jwt",
-  },
-  // Define a página de login customizada
+
+  session: { strategy: "jwt" },
+
   pages: {
     signIn: "/login",
   },
+
   callbacks: {
-    // 3. Atualiza o JWT do NextAuth com o accessToken do FastAPI
+    // ---- JWT CALLBACK ----
     jwt: async ({ token, user }) => {
       if (user) {
-        token.accessToken = (user as any).accessToken
-        token.tokenType = (user as any).tokenType
-        token.email = (user as any).email
+        token.accessToken = user.accessToken;
+        token.tokenType = user.tokenType;
+        token.email = user.email;
       }
-      return token
+      return token;
     },
-    // 4. Expõe o token na sessão para ser acessível pelos componentes
+
+    // ---- SESSION CALLBACK ----
     session: async ({ session, token }) => {
-      if (token.accessToken) {
-        session.accessToken = token.accessToken as string
-        session.tokenType = token.tokenType as string
+      session.accessToken = token.accessToken;
+      session.tokenType = token.tokenType;
+
+      if (session.user) {
+        session.user.email = token.email;
       }
-      return session
+
+      return session;
     },
   },
-}
+};
 
-const handler = NextAuth(authOptions)
+const handler = NextAuth(authOptions);
 
-export { handler as GET, handler as POST }
+export { handler as GET, handler as POST };

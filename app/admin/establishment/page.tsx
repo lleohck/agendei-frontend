@@ -104,11 +104,11 @@ export default function EstablishmentSettingsPage() {
       return;
     }
 
-    // Converte optional string vazia para null para o backend
     const payload: EstablishmentData = {
       name: data.name,
-      address: data.address || null,
-      logo_url: data.logo_url || null,
+      address: data.address || undefined,
+      logo_url: data.logo_url || undefined,
+      slug: undefined,
     };
 
     try {
@@ -200,7 +200,12 @@ export default function EstablishmentSettingsPage() {
                   <FormItem>
                     <FormLabel>Endereço</FormLabel>
                     <FormControl>
-                      <Input placeholder="Ex: Rua das Flores, 123" {...field} />
+                      <Input
+                        placeholder="Ex: Rua das Flores, 123"
+                        {...field}
+                        value={field.value ?? ""} // <-- AQUI 🔥
+                        onChange={(e) => field.onChange(e.target.value)}
+                      />
                     </FormControl>
                     <FormDescription>
                       O endereço principal da sua empresa.
@@ -220,6 +225,8 @@ export default function EstablishmentSettingsPage() {
                       <Input
                         placeholder="Ex: [https://meuapp.com/logo.png](https://meuapp.com/logo.png)"
                         {...field}
+                        value={field.value ?? ""} // <-- AQUI 🔥
+                        onChange={(e) => field.onChange(e.target.value)}
                       />
                     </FormControl>
                     <FormDescription>
